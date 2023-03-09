@@ -6,8 +6,15 @@ def read_file(file):
     f = open(file,'r')
     map_data_string = f.read()
     map_data_list = map_data_string[1:len(map_data_string)-3].splitlines()
+    # for line in map_data_list:
+    #     n_line = line[:-1].replace('[','').replace(']','').strip()
+    #     n_line = n_line
+
     proccessed_map_data_list = [line[:-1].replace('{','').replace('}','').strip().split(',') for line in map_data_list]
-    map_data_points = [((int(line[0]),int(line[1])),float(line[2])) for line in proccessed_map_data_list]
+    map_data_points = {}
+    for line in proccessed_map_data_list:
+        map_data_points[f"{int(line[0].strip())},{int(line[1].strip())}"] = float(line[2].strip())
+    # map_data_points = f"({int(line[0].strip())},{int(line[1].strip())}):{float(line[2].strip())}" for line in proccessed_map_data_list]
     return map_data_points
 
 def create_blender_python(size,map_data):

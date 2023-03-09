@@ -311,6 +311,7 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
             none], % bottom
         State};
 
+% THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
 % No left x and no top y
 handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{_,_},none}, {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, 
             {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
@@ -318,39 +319,42 @@ handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{_,_},none}, {{X_r
         [
             none, % left
             none, % top
-            {{X_right, Mid_y}, calculate_height([Height_m,Height_rb,Height_mfr],Vary_list)}, % right
-            {{Mid_x, Y_bottom}, calculate_height([Height_m,Height_rb,Height_mvb],Vary_list)}], % bottom
+            none, % right
+            none], % bottom
         State};
 
+% THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
 % No right x and no top y
 handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{X_left,Y_bottom}, {value,Height_lb}}, {{_,_},none}, {{Mid_x,Mid_y},{value,Height_m}}, 
             {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
-            {{X_left, Mid_y}, calculate_height([Height_m,Height_lb,Height_mfl],Vary_list)}, % left
+            none, % left
             none, % top
             none, % right
-            {{Mid_x, Y_bottom}, calculate_height([Height_m,Height_lb,Height_mvb],Vary_list)}], % bottom
+            none], % bottom
         State};
 
+% THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
 % No left x and no bottom y
 handle_call({square, Vary_list, {{{_,_},none}, {{X_right,Y_top}, {value,Height_rt}}, {{_,_},none}, {{_,_},none}, {{Mid_x,Mid_y},{value,Height_m}}, 
             {{Mid_x,_Very_top_y},{value,Height_mvt}}, {{_,_},none}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
     {reply,
         [
             none, % left
-            {{Mid_x, Y_top}, calculate_height([Height_m,Height_rt,Height_mvt],Vary_list)}, % top
-            {{X_right, Mid_y}, calculate_height([Height_m,Height_rt,Height_mfr],Vary_list)}, % right
+            none, % top
+            none, % right
             none], % bottom
         State};
 
-% No right x and no bottom y
+% THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
+% No right x and no bottom y. 
 handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{_,_},none}, {{_,_},none}, {{_,_},none}, {{Mid_x,Mid_y},{value,Height_m}}, 
             {{Mid_x,_Very_top_y},{value,Height_mvt}}, {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
-            {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_mfl],Vary_list)}, % left
-            {{Mid_x, Y_top}, calculate_height([Height_m,Height_lt,Height_mvt],Vary_list)}, % top
+            none, % left
+            none, % top
             none, % right
             none], % bottom
         State};
@@ -381,8 +385,8 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
 %%--------------------------------------------------------------------
 -spec calculate_height(list(),list()) -> float().
 calculate_height(Nodes,Vary_list) -> 
-    % lists:sum(Nodes)/length(Nodes) + lists:nth(rand:uniform(length(Vary_list)),Vary_list).
-    lists:sum(Nodes)/length(Nodes).
+    lists:sum(Nodes)/length(Nodes) + lists:nth(rand:uniform(length(Vary_list)),Vary_list).
+    % lists:sum(Nodes)/length(Nodes).
     % lists:sum(Nodes)/4 + lists:nth(rand:uniform(length(Vary_list)),Vary_list).
 
 

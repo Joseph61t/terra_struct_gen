@@ -2,15 +2,18 @@ import bpy
 # import bmesh
 node_positions = <node_list>
 # Get the selected plane
-# plane = bpy.data.objects["Plane"].select_set(True)
+plane = bpy.data.objects["Plane"]
 
 # Change size of plane to be <size> * 10
 # context = bpy.context
 # obj = context.object
 # plane = bpy.context.scene.objects[0]
 # me = obj.data
-bpy.data.objects["Plane"].scale[0] = <size>
-bpy.data.objects["Plane"].scale[1] = <size>
+# bpy.data.objects["Plane"].scale[0] = <size>/2
+plane.scale[0] = <size>/2
+# bpy.data.objects["Plane"].scale[1] = <size>/2
+plane.scale[1] = <size>/2
+# world_matrix = plane.matrix_world
 bpy.ops.object.mode_set(mode="EDIT")
 bpy.ops.mesh.select_all(action='SELECT')
 # New bmesh
@@ -29,14 +32,21 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # bpy.ops.transform.resize(<size>,<size>,0)
 selectedVerts = [v for v in bpy.context.active_object.data.vertices if v.select]
 for v in range(len(selectedVerts)):
-    new_location = selectedVerts[v].co
+    new_location = selectedVerts[v].co #* world_matrix
+    x = ((new_location[0] * <size>)/2) + <size>/2
+    y = ((new_location[1] * <size>)/2) + <size>/2
+    # print(f"{int(x)},{int(y)}")
     # print(new_location)
-    # new_location[0] = new_location[0]
-    # new_location[2] = new_location[2] + node_positions[v][1]
-    new_location[2] = node_positions[v][1]
+    # print(f"|----- new value {node_positions[v][1]} -----|")
+    new_location[2] = node_positions[f"{int(x)},{int(y)}"]
+    # print(f"{new_location}\n")
     selectedVerts[v].co = new_location
+    # print(selectedVerts[v].co)
     # print(f"{selectedVerts[v].index}, {node_positions[v]}")
-# for vert in selectedVerts:
+# for v in plane.data.vertices:
+#     world = world_matrix * v.co
+#     print(world)
+
 bpy.ops.object.mode_set(mode="EDIT")
 
 bpy.ops.mesh.select_all(action='DESELECT')
