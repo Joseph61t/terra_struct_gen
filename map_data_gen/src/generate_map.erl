@@ -13,9 +13,8 @@ make_map(Size_factor) ->
     % io:format("||~p||",[Vary_list]),
     % [{{X,Y},0} || X <- lists:seq(0,Size), Y <- lists:seq(0,Size)].
     % orddict:from_list([{{X,Y},0} || X <- lists:seq(0,Size), Y <- lists:seq(0,Size)]).
-    Structure_map1 = gb_trees:from_orddict(orddict:from_list([{{X,Y},0} || X <- lists:seq(0,Size-1), Y <- lists:seq(0,Size-1)])),
-    Structure_map2 = add_structures(Size*Size,Size,{0,0},Structure_map1,1),
-    io:format("~p~n",gb_trees:to_list(Structure_map2)),
+    % Structure_map1 = gb_trees:from_orddict(orddict:from_list([{{X,Y},0} || X <- lists:seq(0,Size-1), Y <- lists:seq(0,Size-1)])),
+    % io:format("~p~n",gb_trees:to_list(Structure_map2)),
     Terrain_map1 = gb_trees:from_orddict(orddict:from_list([{{X,Y},0} || X <- lists:seq(0,Size), Y <- lists:seq(0,Size)])),
     % io:format("terrain_map before updates: ~p~n",[Terrain_map1]),
     Terrain_map2 = gb_trees:update({0,0},lists:nth(rand:uniform(length(Vary_list)),Vary_list),Terrain_map1),
@@ -28,7 +27,8 @@ make_map(Size_factor) ->
                     Size,
                     Variance,
                     Terrain_map5),
-    % io:format("~p~n",[Map]),
+    Structured_map = add_structures(Size*Size,Size,{0,0,1,1},Map,1),
+    io:format("~p~n",[Structured_map]),
     Map_name = save_map(1,
                         string:concat("/home/orindale/Programing/terra_struct_gen/map_creation/maps_datas/Size_", 
                                       integer_to_list(Size)),
@@ -42,7 +42,7 @@ make_map(Size_factor) ->
     os:cmd(Command).
     % Vary_list. 
 
-save_map(Count,Name,Terrain_map) ->
+save_map(_Count,Name,Terrain_map) ->
     % file:write_file(Name, Terrain_map).
     case file:read_file_info(Name) of
         {error, enoent} -> file:write_file(Name, io_lib:fwrite("~p.\n",[Terrain_map])),
@@ -53,48 +53,51 @@ save_map(Count,Name,Terrain_map) ->
     end.
 
 -spec add_structures(term(),term(),term(),term(),term()) -> term().
-add_structures(1,Size,{X,Y},Structure_map,Struct) ->
-    Adjacent_squares = {
-        {{round(X),round(Y+1)},gb_trees:lookup({X,Y+1},Structure_map)},
-        {{round(X+1),round(Y+1)},gb_trees:lookup({round(X+1),round(Y+1)},Structure_map)},
-        {{round(X+1),round(Y)},gb_trees:lookup({round(X+1),round(Y)},Structure_map)},
-        {{round(X+1),round(Y-1)},gb_trees:lookup({round(X+1),round(Y-1)},Structure_map)},
-        {{round(X),round(Y-1)},gb_trees:lookup({X,Y-1},Structure_map)},
-        {{round(X-1),round(Y-1)},gb_trees:lookup({round(X-1),round(Y-1)},Structure_map)},
-        {{round(X-1),round(Y)},gb_trees:lookup({round(X-1),round(Y)},Structure_map)},
-        {{round(X-1),round(Y+1)},gb_trees:lookup({round(X-1),round(Y+1)},Structure_map)}
+add_structures(1,Size,{X1,Y1,X2,Y2},Map,Struct) ->
+    Square_corners = {
+        {{round(X1),round(Y1)},gb_trees:lookup({X1,Y1},Map)},
+        {{round(X1),round(Y2)},gb_trees:lookup({X1,Y2},Map)},
+        {{round(X2),round(Y1)},gb_trees:lookup({X2,Y1},Map)},
+        {{round(X2),round(Y2)},gb_trees:lookup({X2,Y2},Map)}
     },
+    % Points = [{X,Y} || X <- [X1,X2], Y <- [Y1,Y2]],
+    % Heights = [gb_trees:lookup(Point,Map)|| Point <- Points],
+    Structure = structure_calculation:decide_struct(disq_struct,Square_corners,Size+1,Struct),
+    case Structure of
+        false -> Map;
+        _Else -> update_structure_map({{X1,Y1},{X1,Y2},{X2,Y1},{X2,Y2}},Structure, Map)
+    end;
 
-    Structure = structure_calculation:decide_struct(disq_struct,Adjacent_squares),
-    update_map([{{X,Y},Structure}], Structure_map);
+add_structures(Squares_left,Size,{X1,Y1,X2,Y2},Map,Struct) ->
 
-add_structures(Squares_left,Size,{X,Y},Structure_map,Struct) ->
-
-    Adjacent_squares = {
-        {{round(X),round(Y+1)},gb_trees:lookup({X,Y+1},Structure_map)},
-        {{round(X+1),round(Y+1)},gb_trees:lookup({round(X+1),round(Y+1)},Structure_map)},
-        {{round(X+1),round(Y)},gb_trees:lookup({round(X+1),round(Y)},Structure_map)},
-        {{round(X+1),round(Y-1)},gb_trees:lookup({round(X+1),round(Y-1)},Structure_map)},
-        {{round(X),round(Y-1)},gb_trees:lookup({X,Y-1},Structure_map)},
-        {{round(X-1),round(Y-1)},gb_trees:lookup({round(X-1),round(Y-1)},Structure_map)},
-        {{round(X-1),round(Y)},gb_trees:lookup({round(X-1),round(Y)},Structure_map)},
-        {{round(X-1),round(Y+1)},gb_trees:lookup({round(X-1),round(Y+1)},Structure_map)},
-        Struct
+    Square_corners = {
+        {{round(X1),round(Y1)},gb_trees:lookup({X1,Y1},Map)},
+        {{round(X1),round(Y2)},gb_trees:lookup({X1,Y2},Map)},
+        {{round(X2),round(Y1)},gb_trees:lookup({X2,Y1},Map)},
+        {{round(X2),round(Y2)},gb_trees:lookup({X2,Y2},Map)}
     },
-
-    Structure = structure_calculation:decide_struct(disq_struct,Adjacent_squares),
-    Structure_map2 = update_map([{{X,Y},Structure}], Structure_map),
-    case X == Size of
-        true -> New_X = 0,
-                New_Y = Y + 1;
-        _Else -> New_X = X + 1,
-                 New_Y = Y
+    % Points = [{X,Y} || X <- [X1,X2], Y <- [Y1,Y2]],
+    % Heights = [gb_trees:lookup(Point,Map)|| Point <- Points],
+    Structure = structure_calculation:decide_struct(disq_struct,Square_corners,Size+1,Struct), %%%% START HERE
+    case Structure of
+        false -> Structure_map = Map;
+        _Else -> Structure_map = update_structure_map({{X1,Y1},{X1,Y2},{X2,Y1},{X2,Y2}}, Structure, Map)
+    end,
+    case X1 == Size of
+        true -> New_X1 = 0,
+                New_X2 = 1,
+                New_Y1 = Y1 + 1,
+                New_Y2 = Y2 + 1;
+        _ELse -> New_X1 = X1 + 1,
+                 New_X2 = X2 + 1,
+                 New_Y1 = Y1,
+                 New_Y2 = Y2
     end,
     case Structure == Struct of
         true -> Next_struct = Struct + 1;
-        _ELse -> Next_struct = Struct
+        _ELSe -> Next_struct = Struct
     end,
-    add_structures(Squares_left-1,Size,{New_X,New_Y},Structure_map2,Next_struct).
+    add_structures(Squares_left-1,Size,{New_X1,New_Y1,New_X2,New_Y2},Structure_map,Next_struct).
 
 -spec vary_map(term(),term(),term(),term()) -> term().
 vary_map(1,Size,Variance,Terrain_map) -> 
@@ -163,7 +166,7 @@ vary_map(Step, Size, Variance, Terrain_map) ->
                     {{round(X+Step),round(Y)},gb_trees:lookup({round(X+Step),round(Y)},Terrain_map2)} %
                 }
                 || {{X,Y},Mid_height} <- Diamond_mids],
-%%% SHOULD I REMAKE THE VARY_LIST HERE? IT MAY FIX ISSUES WITH EXTREME CHANGES IN THE HEIGHTS.
+
     Diamond_corners = lists:append([diamond_square:square_step(disq,Vary_list,Diamond) || Diamond <- Diamonds]),
     Terrain_map3 = update_map(Diamond_corners, Terrain_map2),
     % io:format("~p",[gb_trees:values(Terrain_map3)]),
@@ -186,3 +189,24 @@ update_map([{Key,Value}|Points],Terrain_map) ->
         _Else -> update_map(Points,Terrain_map)
     end.
 
+
+% update_structure_map([none|Points],Square,Structure,Map) -> 
+%     Map;
+
+% update_structure_map([],{T_left,T_right,B_left,B_right},Structure,Map) -> 
+update_structure_map({T_left,T_right,B_left,B_right},Structure,Map) -> 
+    TL_height = get_height(gb_trees:lookup(T_left,Map)),
+    TR_height = get_height(gb_trees:lookup(T_right,Map)),
+    BL_height = get_height(gb_trees:lookup(B_left,Map)),
+    BR_height = get_height(gb_trees:lookup(B_right,Map)),
+    Map1 = gb_trees:update(T_left,{TL_height,Structure},Map),
+    Map2 = gb_trees:update(T_right,{TR_height,Structure},Map1),
+    Map3 = gb_trees:update(B_left,{BL_height,Structure},Map2),
+    gb_trees:update(B_right,{BR_height,Structure},Map3).
+
+% update_structure_map([Point|Points],Square,Structure,Map) ->
+%     update_structure_map(Points,Square,Structure,Map).
+
+
+get_height({_,{Height,_}}) -> Height;
+get_height({_,Height}) -> Height.

@@ -3,7 +3,7 @@
 -define(SERVER,?MODULE).
 
 % API commands
--export([start/0,start/1,start/2,start/3,stop/0,decide_struct/2]).
+-export([start/0,start/1,start/2,start/3,stop/0,decide_struct/4]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -70,8 +70,8 @@ stop() -> gen_server:call(?MODULE, stop).
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec decide_struct(term(),tuple()) -> term().
-decide_struct(Name,Squares) -> gen_server:call(Name,Squares).
+-spec decide_struct(term(),tuple(),term(),tuple()) -> term().
+decide_struct(Name,Square_corners,Size,Struct) -> gen_server:call(Name,{Square_corners,Size,Struct}).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -112,83 +112,26 @@ handle_call(stop, _From, _State) ->
         {stop,normal,
                 stopped,
           down}; %% setting the server's internal state to down
-% {{_,_},none}
 
-% No left or top squares.
-handle_call({{{_,_},none}, {{_,_},none}, {{Positive_x,Zero_y},{value,PZ_square}}, 
-            {{Positive_x,Negative_y},{value,PN_square}}, {{Zero_x,Negative_y},{value,ZN_square}}, {{_,_},none}, 
-            {{_,_},none}, {{_,_},none},Next_struct},_From,State) ->
 
-        Squares = [PZ_square,PN_square,ZN_square],
+handle_call({{{{X1,Y1},{value,Value_11}},{{X1,Y2},{value,Value_12}},{{X2,Y1},{value,Value_21}},{{X2,Y2},{value,Value_22}}},
+            Size,Next_struct},_From,State) ->
 
-        Struct_value = calculate_structure(Squares,Next_struct),
+        % Squares = [PZ_square,PN_square,ZN_square],
+        Square = [make_tuple_value(Value_11),make_tuple_value(Value_12),make_tuple_value(Value_21),make_tuple_value(Value_22)],
+        case can_be_struct(Square,Size) of
+            true -> Struct_value = calculate_structure(Square,Next_struct);
+            _Else -> Struct_value = 0
+        end,
     {reply,
         Struct_value,
         State};
 
-% No top or right squares
-handle_call({{{_,_},none}, {{_,_},none}, {{_,_},none}, {{_,_},none}, {{Zero_x,Negative_y},{value,ZN_square}}, 
-            {{Negative_x,Negative_y},{value,NN_square}}, {{Negative_x,Zero_y},{value,NZ_square}}, {{_,_},none},
-            Next_struct},_From,State) ->
-
-    Squares = [ZN_square,NN_square,NZ_square],
-
-    Struct_value = calculate_structure(Squares,Next_struct),
-
+handle_call({_Square,_Size,_Next_struct},_From,State) -> 
     {reply,
-        Struct_value,
-        State};
-
-% No right squares
-handle_call({{{_,_},none}, {{_,_},none}, 
-            {{Positive_x,Zero_y},{value,PZ_square}}, {{Positive_x,Negative_y},{value,PN_square}}, 
-            {{Zero_x,Negative_y},{value,ZN_square}}, {{Negative_x,Negative_y},{value,NN_square}}, 
-            {{Negative_x,Zero_y},{value,NZ_square}}, {{_,_},none},Next_struct},_From,State) ->
-
-    Squares = [PZ_square,PN_square,ZN_square,NN_square,NZ_square],
-
-    Struct_value = calculate_structure(Squares,Next_struct),
-
-    {reply,
-        Struct_value,
-        State};
-
-
-handle_call({{{Zero_x,Positive_y},{value,ZP_square}}, {{_,_},none}, {{_,_},none}, {{_,_},none}, 
-            {{Zero_x,Negative_y},{value,ZN_square}}, {{Negative_x,Negative_y},{value,NN_square}}, 
-            {{Negative_x,Zero_y},{value,NZ_square}}, {{Negative_x,Positive_y},{value,NP_square}},Next_struct},_From,State) ->
-
-    Squares = [ZP_square,ZN_square,NN_square,NZ_square,NP_square],
-
-    Struct_value = calculate_structure(Squares,Next_struct),
-
-    {reply,
-        Struct_value,
-        State};
-
-handle_call({{{Zero_x,Positive_y},{value,ZP_square}}, {{_,_},none}, {{_,_},none}, {{_,_},none}, {{_,_},none}, 
-            {{_,_},none}, {{Negative_x,Zero_y},{value,NZ_square}}, {{Negative_x,Positive_y},{value,NP_square}},Next_struct},_From,State) ->
-
-    Squares = [ZP_square,NZ_square,NP_square],
-
-    Struct_value = calculate_structure(Squares,Next_struct),
-
-    {reply,
-        Struct_value,
-        State};
-
-handle_call({{Square_x,Square_y}, {{Zero_x,Positive_y},{value,ZP_square}}, {{Positive_x,Positive_y},{value,PP_square}}, 
-            {{Positive_x,Zero_y},{value,PZ_square}}, {{Positive_x,Negative_y},{value,PN_square}}, 
-            {{Zero_x,Negative_y},{value,ZN_square}}, {{Negative_x,Negative_y},{value,NN_square}}, 
-            {{Negative_x,Zero_y},{value,NZ_square}}, {{Negative_x,Positive_y},{value,NP_square}},Next_struct},_From,State) ->
-
-    Squares = [ZP_square,PP_square,PZ_square,PN_square,ZN_square,NN_square,NZ_square,NP_square],
-
-    Struct_value = calculate_structure(Squares,Next_struct),
-
-    {reply,
-        Struct_value,
+        false,
         State}.
+
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -198,27 +141,36 @@ handle_call({{Square_x,Square_y}, {{Zero_x,Positive_y},{value,ZP_square}}, {{Pos
 %% @end
 %%--------------------------------------------------------------------
 
+can_be_struct([{H1,_},{H2,_},{H3,_},{H4,_}],_Size) when abs(abs(H1)-abs(H2)) < 2, abs(abs(H2)-abs(H3)) < 2, 
+                                                    abs(abs(H3)-abs(H4)) < 2, abs(abs(H4)-abs(H1)) < 2 -> true;
+can_be_struct(_,_) -> false.
+
+calculate_structure(Square,Next_struct) ->
+    Structs = [Struct || {_,Struct} <- Square],
+    Struct_value = which_structure(Structs,0),
+    case lists:sum(Structs) / Struct_value of
+        0 -> Struct_choices = [Next_struct,0];
+        1 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0,0,0];
+        2 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0,0];
+        3 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0];
+        4 -> Struct_choices = [Struct_value]
+    end,
+    Struct_choices.
+
 which_structure([],Held_struct) -> Held_struct;
-which_structure([H|_],Held_struct) when 0 < Held_struct, Held_struct /= H -> 0;
+which_structure([0|T],Held_struct) -> which_structure(T,Held_struct);
 which_structure([H|T],Held_struct) when 0 < H, Held_struct == 0 -> which_structure(T,H);
 which_structure([H|T],Held_struct) when 0 < Held_struct, Held_struct == H -> which_structure(T,Held_struct);
-which_structure([0|T],Held_struct) -> which_structure(T,Held_struct).
+which_structure([H|_],Held_struct) when 0 < Held_struct, Held_struct /= H -> 0.
 
 
+get_height({Height,_}) -> Height;
+get_height(Height) -> Height.
 
+get_struct({_,Struct}) -> Struct;
+get_struct(_) -> 0.
 
-calculate_structure(Squares,Next_struct) ->
-    Struct_value = which_structure(Squares,0),
-    case Struct_value of
-        0 -> Struct_choices = construct_struct_choices([0],Next_struct);
-        _Else -> Struct_choices = construct_struct_choices(Squares,Struct_value),
-                lists:nth(rand:uniform(length(Struct_choices)),Struct_choices)
-    end.
-
-
-construct_struct_choices(Squares,Struct_value) when length(Squares) == 9 -> Squares;
-construct_struct_choices(Squares,Struct_value) when length(Squares) < 5 -> construct_struct_choices([Struct_value|Squares],Struct_value);
-construct_struct_choices(Squares,Struct_value) when length(Squares) < 9 -> construct_struct_choices([0|Squares],Struct_value).
+make_tuple_value(Value) -> {get_height(Value),get_struct(Value)}.
 
 %%--------------------------------------------------------------------
 %% @private
