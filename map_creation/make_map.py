@@ -46,8 +46,7 @@ def create_blender_python(size,map_data):
     f = open(f"/home/orindale/Programing/terra_struct_gen/map_creation/blend_files/{file_name}",'w')
     f.write(py_blender)
     f.close()
-    # open blender file just made in blender with no GUI
-    # import py_blender_<size>.py into blender, and run
+    # open blender file just made in blender with no GUI, then import py_blender_<size>.py into blender, and run
     os.system(f"blender /home/orindale/Programing/terra_struct_gen/map_creation/starting_map.blend --background --python /home/orindale/Programing/terra_struct_gen/map_creation/blend_files/{file_name}")
 
 

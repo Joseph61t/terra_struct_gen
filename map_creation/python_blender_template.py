@@ -1,14 +1,14 @@
 import bpy
-# import bmesh
+# Nodes, and associated data
 node_positions = <node_list>
+
 # Get the selected plane
 plane = bpy.data.objects["Plane"]
 
-# Change size of plane to be <size> * 10
-# context = bpy.context
-
+# Change size of plane
 plane.scale[0] = <size>/2
 plane.scale[1] = <size>/2
+
 bpy.ops.object.mode_set(mode="EDIT")
 bpy.ops.mesh.select_all(action='SELECT')
 
@@ -23,7 +23,7 @@ for v in range(len(selectedVerts)):
     # print(f"{int(x)},{int(y)}")
     # print(new_location)
     # print(f"|----- new value {node_positions[v][1]} -----|")
-    new_location[2] = node_positions[f"{int(x)},{int(y)}"]
+    new_location[2] = node_positions[f"{int(x)},{int(y)}"][0]
     # print(f"{new_location}\n")
     selectedVerts[v].co = new_location
     # print(selectedVerts[v].co)

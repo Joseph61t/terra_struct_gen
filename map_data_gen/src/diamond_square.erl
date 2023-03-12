@@ -146,8 +146,8 @@ handle_call({diamond, _, {_, _, _, {{_,_},none}}},_From,State) ->
         State};
 
 % All xs and ys exist
-handle_call({diamond, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, 
-            {{X_left,Y_bottom}, {value,Height_lb}}, {{X_right,Y_bottom}, {value,Height_rb}}}},_From,State) ->
+handle_call({diamond, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, 
+            {{X_left,Y_bottom}, {value,{Height_lb,_}}}, {{X_right,Y_bottom}, {value,{Height_rb,_}}}}},_From,State) ->
     {reply,
         {{(X_left + (X_right - X_left) div 2),
         (Y_top + (Y_bottom - Y_top) div 2)},
@@ -156,9 +156,9 @@ handle_call({diamond, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right
 
 
 % Far right x does not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, 
-            {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, 
+            {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb,Height_mfl],Vary_list)}, % left
@@ -168,9 +168,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % Far left x does not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, 
-            {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, 
+            {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb],Vary_list)}, % left
@@ -180,9 +180,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % Very top y does not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, 
-            {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, 
+            {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb,Height_mfl],Vary_list)}, % left
@@ -192,9 +192,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % Very bottom y does not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, 
-            {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, 
+            {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb,Height_mfl],Vary_list)}, % left
@@ -204,9 +204,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % Far left x and very top y do not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, 
-            {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, 
+            {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb],Vary_list)}, % left
@@ -216,9 +216,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % Far right x and very top y do not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, 
-            {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, 
+            {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb,Height_mfl],Vary_list)}, % left
@@ -228,9 +228,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % Far right x and very bottom y do not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, 
-            {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, 
+            {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb,Height_mfl],Vary_list)}, % left
@@ -240,9 +240,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % Far left x and very bottom y do not exist
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, 
-            {{_,_},none}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, 
+            {{_,_},none}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb],Vary_list)}, % left
@@ -252,8 +252,8 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % all Far xs and very top and bottom ys don't exist.
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, 
-    {value,Height_lb}}, {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{_,_},none}, {{_,_},none},
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, 
+    {value,{Height_lb,_}}}, {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{_,_},none}, {{_,_},none},
     {{_,_},none}, {{_,_},none}}},_From,State) ->
     {reply,
         [
@@ -264,9 +264,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
         State};
 
 % No left x
-handle_call({square, Vary_list, {{{_,_},none}, {{X_right,Y_top}, {value,Height_rt}}, {{_,_},none}, {{X_right,Y_bottom}, {value,Height_rb}},
-            {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, 
-            {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{_,_},none}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{_,_},none}, {{X_right,Y_bottom}, {value,{Height_rb,_}}},
+            {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, 
+            {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             none, % left
@@ -276,9 +276,9 @@ handle_call({square, Vary_list, {{{_,_},none}, {{X_right,Y_top}, {value,Height_r
         State};
 
 % No right x
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{_,_},none}, {{X_left,Y_bottom}, {value,Height_lb}}, {{_,_},none},
-            {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, 
-            {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{_,_},none}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, {{_,_},none},
+            {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, 
+            {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb,Height_mfl],Vary_list)}, % left
@@ -288,9 +288,9 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{_,_},non
         State};
 
 % No top y
-handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{X_left,Y_bottom}, {value,Height_lb}}, {{X_right,Y_bottom}, {value,Height_rb}},
-            {{Mid_x,Mid_y},{value,Height_m}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, 
-            {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, {{X_right,Y_bottom}, {value,{Height_rb,_}}},
+            {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, 
+            {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lb,Height_mfl],Vary_list)}, % left
@@ -300,9 +300,9 @@ handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{X_left,Y_bottom},
         State};
 
 % No bottom y
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{_,_},none}, {{_,_},none}, 
-            {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, 
-            {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{_,_},none}, {{_,_},none}, 
+            {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, 
+            {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_mfl],Vary_list)}, % left
@@ -313,8 +313,8 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,
 
 % THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
 % No left x and no top y
-handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{_,_},none}, {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, 
-            {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{_,_},none}, {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, 
+            {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             none, % left
@@ -325,8 +325,8 @@ handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{_,_},none}, {{X_r
 
 % THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
 % No right x and no top y
-handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{X_left,Y_bottom}, {value,Height_lb}}, {{_,_},none}, {{Mid_x,Mid_y},{value,Height_m}}, 
-            {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
+handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, {{_,_},none}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, 
+            {{_,_},none}, {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
             none, % left
@@ -337,8 +337,8 @@ handle_call({square, Vary_list, {{{_,_},none}, {{_,_},none}, {{X_left,Y_bottom},
 
 % THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
 % No left x and no bottom y
-handle_call({square, Vary_list, {{{_,_},none}, {{X_right,Y_top}, {value,Height_rt}}, {{_,_},none}, {{_,_},none}, {{Mid_x,Mid_y},{value,Height_m}}, 
-            {{Mid_x,_Very_top_y},{value,Height_mvt}}, {{_,_},none}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{_,_},none}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{_,_},none}, {{_,_},none}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, 
+            {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, {{_,_},none}, {{_,_},none}, {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             none, % left
@@ -349,8 +349,8 @@ handle_call({square, Vary_list, {{{_,_},none}, {{X_right,Y_top}, {value,Height_r
 
 % THIS IS A CORNER AND DOES NOT, AND SHOULD NOT GET CALLED.
 % No right x and no bottom y. 
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{_,_},none}, {{_,_},none}, {{_,_},none}, {{Mid_x,Mid_y},{value,Height_m}}, 
-            {{Mid_x,_Very_top_y},{value,Height_mvt}}, {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, {{_,_},none}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{_,_},none}, {{_,_},none}, {{_,_},none}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, 
+            {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, {{_,_},none}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, {{_,_},none}}},_From,State) ->
     {reply,
         [
             none, % left
@@ -360,10 +360,10 @@ handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{_,_},non
         State};
 
 % All xs and ys exist.
-handle_call({square, Vary_list, {{{X_left,Y_top}, {value,Height_lt}}, {{X_right,Y_top}, {value,Height_rt}}, {{X_left,Y_bottom}, {value,Height_lb}}, 
-            {{X_right,Y_bottom}, {value,Height_rb}}, {{Mid_x,Mid_y},{value,Height_m}}, {{Mid_x,_Very_top_y},{value,Height_mvt}}, 
-            {{Mid_x,_Very_bottom_y},{value,Height_mvb}}, {{_Mid_Far_left_x,Mid_y},{value,Height_mfl}}, 
-            {{_Mid_Far_right_x,Mid_y},{value,Height_mfr}}}},_From,State) ->
+handle_call({square, Vary_list, {{{X_left,Y_top}, {value,{Height_lt,_}}}, {{X_right,Y_top}, {value,{Height_rt,_}}}, {{X_left,Y_bottom}, {value,{Height_lb,_}}}, 
+            {{X_right,Y_bottom}, {value,{Height_rb,_}}}, {{Mid_x,Mid_y},{value,{Height_m,_}}}, {{Mid_x,_Very_top_y},{value,{Height_mvt,_}}}, 
+            {{Mid_x,_Very_bottom_y},{value,{Height_mvb,_}}}, {{_Mid_Far_left_x,Mid_y},{value,{Height_mfl,_}}}, 
+            {{_Mid_Far_right_x,Mid_y},{value,{Height_mfr,_}}}}},_From,State) ->
     {reply,
         [
             {{X_left, Mid_y}, calculate_height([Height_m,Height_lt,Height_lb,Height_mfl],Vary_list)}, % left
