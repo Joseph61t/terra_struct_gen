@@ -13,7 +13,7 @@ def read_file(file):
     proccessed_map_data_list = [line[:-1].replace('{','').replace('}','').strip().split(',') for line in map_data_list]
     map_data_points = {}
     for line in proccessed_map_data_list:
-        map_data_points[f"{int(line[0].strip())},{int(line[1].strip())}"] = float(line[2].strip())
+        map_data_points[f"{int(line[0].strip())},{int(line[1].strip())}"] = (float(line[2].strip()),int(line[3].strip()))
     # map_data_points = f"({int(line[0].strip())},{int(line[1].strip())}):{float(line[2].strip())}" for line in proccessed_map_data_list]
     return map_data_points
 

@@ -147,30 +147,27 @@ handle_call({Square,_Size,_Structures,_Next_struct},_From,State) ->
 %% @end
 %%--------------------------------------------------------------------
 
-can_be_struct([{H1,_},{H2,_},{H3,_},{H4,_}]) when abs(abs(H1)-abs(H2)) < 2, abs(abs(H2)-abs(H3)) < 2, 
-                                                    abs(abs(H3)-abs(H4)) < 2, abs(abs(H4)-abs(H1)) < 2 -> true;
+can_be_struct([{H1,_},{H2,_},{H3,_},{H4,_}]) when abs(abs(H1)-abs(H2)) < 1, abs(abs(H2)-abs(H3)) < 1, 
+                                                    abs(abs(H3)-abs(H4)) < 1, abs(abs(H4)-abs(H1)) < 1 -> true;
 can_be_struct(_) -> false.
 
 calculate_structure(Square,Structures,Next_struct) ->
     Structs = [Struct || {_,Struct} <- Square],
     % Struct_value = which_structure(Structs,0),
     case which_structure(Structs,0) of
-        0 -> Struct_value = Next_struct;
+        none -> Struct_choices = [0];
+        0 -> Struct_choices = [0,Next_struct];
         Else -> case dict:fetch(integer_to_list(Else),Structures) of
-                    done -> Struct_value = 0;
-                    _Else -> Struct_value = Else
+                    done -> Struct_choices = [0];
+                    _Else -> Struct_value = Else,
+                            case round(lists:sum(Structs) / Struct_value) of
+                                0 -> Struct_choices = [Next_struct,0];
+                                1 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0,0,0];
+                                2 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0,0];
+                                3 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0];
+                                4 -> Struct_choices = [Struct_value]
+                            end
                 end
-    end,
-    
-    % io:format("Structs: ~p~n",[lists:sum(Structs)]),
-    % io:format("Struct_value: ~p~n",[Struct_value]),
-
-    case round(lists:sum(Structs) / Struct_value) of
-        0 -> Struct_choices = [Next_struct,0];
-        1 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0,0,0];
-        2 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0,0];
-        3 -> Struct_choices = [Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,Struct_value,0,0];
-        4 -> Struct_choices = [Struct_value]
     end,
     Struct_choices.
 
@@ -178,7 +175,7 @@ which_structure([],Held_struct) -> Held_struct;
 which_structure([0|T],Held_struct) -> which_structure(T,Held_struct);
 which_structure([H|T],Held_struct) when 0 < H, Held_struct == 0 -> which_structure(T,H);
 which_structure([H|T],Held_struct) when 0 < Held_struct, Held_struct == H -> which_structure(T,Held_struct);
-which_structure([H|_],Held_struct) when 0 < Held_struct, Held_struct /= H -> 0.
+which_structure([H|_],Held_struct) when 0 < Held_struct, Held_struct /= H -> none.
 
 
 get_height({Height,_}) -> Height;

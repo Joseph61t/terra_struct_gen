@@ -132,7 +132,7 @@ vary_map(1,Size,Variance,Terrain_map) ->
                     {{round(X+1/2),round(Y-1/2)},gb_trees:lookup({round(X+1/2),round(Y-1/2)},Terrain_map2)}, %
                     {{round(X-1/2),round(Y+1/2)},gb_trees:lookup({round(X-1/2),round(Y+1/2)},Terrain_map2)}, %
                     {{round(X+1/2),round(Y+1/2)},gb_trees:lookup({round(X+1/2),round(Y+1/2)},Terrain_map2)}, %
-                    {{X,Y},{value,Mid_height}}, %
+                    {{X,Y},{value,{Mid_height,0}}}, %
                     {{round(X),round(Y-1)},gb_trees:lookup({X,Y-1},Terrain_map2)}, %
                     {{round(X),round(Y+1)},gb_trees:lookup({X,Y+1},Terrain_map2)}, %
                     {{round(X-1),round(Y)},gb_trees:lookup({round(X-1),round(Y)},Terrain_map2)}, %
@@ -166,7 +166,7 @@ vary_map(Step, Size, Variance, Terrain_map) ->
                     {{round(X+Step/2),round(Y-Step/2)},gb_trees:lookup({round(X+Step/2),round(Y-Step/2)},Terrain_map2)}, %
                     {{round(X-Step/2),round(Y+Step/2)},gb_trees:lookup({round(X-Step/2),round(Y+Step/2)},Terrain_map2)}, %
                     {{round(X+Step/2),round(Y+Step/2)},gb_trees:lookup({round(X+Step/2),round(Y+Step/2)},Terrain_map2)}, %
-                    {{X,Y},{value,Mid_height}}, %
+                    {{X,Y},{value,{Mid_height,0}}}, %
                     {{round(X),round(Y-Step)},gb_trees:lookup({X,Y-Step},Terrain_map2)}, %
                     {{round(X),round(Y+Step)},gb_trees:lookup({X,Y+Step},Terrain_map2)}, %
                     {{round(X-Step),round(Y)},gb_trees:lookup({round(X-Step),round(Y)},Terrain_map2)}, %
@@ -178,7 +178,7 @@ vary_map(Step, Size, Variance, Terrain_map) ->
     Terrain_map3 = update_map(Diamond_corners, Terrain_map2),
     % io:format("~p",[gb_trees:values(Terrain_map3)]),
     % io:format("~p",[Step]),
-    vary_map(round(Step/2),Size,Variance/3,Terrain_map3).
+    vary_map(round(Step/2),Size,Variance/6,Terrain_map3).
 
 
 
