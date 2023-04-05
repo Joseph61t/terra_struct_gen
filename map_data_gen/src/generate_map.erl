@@ -1,30 +1,219 @@
 -module(generate_map).
--export([make_map/1]).
+-behaviour(gen_server).
+-define(SERVER,?MODULE).
+
+-export([start/1,start/2,start/3,stop/0,random_map/1,chosen_map/1]).
+-export([init/1,handle_call/3,handle_cast/2,handle_info/2,code_change/3]).
 
 
 
--spec make_map(term()) -> term().
-make_map(Size_factor) ->
+-spec init(term()) -> {ok, term()}|{ok, term(), number()}|ignore |{stop, term()}.
+init([]) ->
+    main_frame:start(),
+    {ok,running}.
+
+-spec start(atom(),atom(),atom()) -> {ok, pid()} | ignore | {error, term()}.
+start(Registration_type,Name,Args) ->
+    gen_server:start_link({Registration_type, Name}, ?MODULE, Args, []).
+
+-spec start(atom(),atom()) -> {ok, pid()} | ignore | {error, term()}.
+start(Registration_type,Name) ->
+    gen_server:start_link({Registration_type, Name}, ?MODULE, [], []).
+
+-spec start(atom()) -> {ok, pid()} | ignore | {error, term()}.
+start(Name) ->
+    gen_server:start_link({local, Name}, ?MODULE, [], []).
+
+-spec stop() -> {ok}|{error, term()}.
+stop() -> gen_server:call(gen_maps, stop).
+
+
+random_map(Size_factor) -> gen_server:call(gen_map,{random_map,Size_factor}).
+
+chosen_map(Map_options) -> gen_server:call({chosen_map,Map_options}).
+
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handling call messages
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec handle_call(Request::term(), From::pid(), State::term()) ->
+                                  {reply, term(), term()} |
+                                  {reply, term(), term(), integer()} |
+                                  {noreply, term()} |
+                                  {noreply, term(), integer()} |
+                                  {stop, term(), term(), integer()} | 
+                                  {stop, term(), term()}.
+% handle_call(_Request, _From, State) ->
+%         {reply,replace_started,State};
+handle_call({random_map,Size_factor}, _From, _State) ->
     Size = round(math:pow(2,Size_factor)),
-    Variance = Size*10,
-    Step = Size,
-    % Step = round(Size/2),
-    Vary_list = lists:map(fun(X) -> X/10 end, lists:seq(0-Variance,Variance)),
+    % Ex_mountains = 7,
+    % Mountains = 5,
+    % Plains = 3,
+    % Ex_plains = 1,
+    % Intensity = lists:nth(rand:uniform(3),[Ex_mountains,Mountains,Plains,Ex_plains]),
+
+    Intensity = lists:nth(rand:uniform(3),[7,5,3,1]),
+
+    Vary_reduce = 10 - Size_factor,
+    Variance = Size * 2 * Intensity,
+    io:format("Intensity: ~p~n",[Intensity]),
+    io:format("Vary_reduce: ~p~n",[Vary_reduce]),
+    io:format("Starting Variance: ~p~n",[Variance]),
+
+    Low_unbalanced = lists:map(fun(X) -> X/10 end, lists:seq(Intensity-Variance,Variance+Intensity)),
+    High_unbalanced = lists:map(fun(X) -> X/10 end, lists:seq(Size+Intensity-Variance,Size+Intensity+Variance)),
+    Low_balanced = [Intensity],
+    % Low_plains = lists:map(fun(X) -> X/10 end, lists:seq(0-Variance,Variance)),
+    High_balanced = [Size+Intensity],
+    % High_plains = lists:map(fun(X) -> X/10 end, lists:seq(0-Variance,Variance)),
+
     % io:format("||~p||",[Vary_list]),
-    % [{{X,Y},0} || X <- lists:seq(0,Size), Y <- lists:seq(0,Size)].
-    % orddict:from_list([{{X,Y},0} || X <- lists:seq(0,Size), Y <- lists:seq(0,Size)]).
-    % Structure_map1 = gb_trees:from_orddict(orddict:from_list([{{X,Y},0} || X <- lists:seq(0,Size-1), Y <- lists:seq(0,Size-1)])),
-    % io:format("~p~n",gb_trees:to_list(Structure_map2)),
+    % Terrain_type = lists:nth(4,[Low_unbalanced,High_unbalanced,Low_balanced,High_balanced]),
+    
+    case lists:nth(rand:uniform(4),[0,1,2,3]) of
+        0 -> io:format("Low_unbalanced~n"),
+            Terrain_type = Low_unbalanced;
+        1 -> io:format("High_unbalanced~n"),
+            Terrain_type = High_unbalanced;
+        2 -> io:format("Low_balanced~n"),
+            Terrain_type = Low_balanced;
+        3 -> io:format("High_balanced~n"),
+            Terrain_type = High_balanced
+    end,
+
+    Results = make_map(Size_factor,Intensity,Terrain_type),
+
+    {reply, Results, down};
+
+handle_call({chosen_map,{Size_factor,Intensity,Height,Original_stability}}, _From, _State) ->
+    Size = round(math:pow(2,Size_factor)),
+    Variance = Size * 2 * Intensity,
+
+    Low_unbalanced = lists:map(fun(X) -> X/10 end, lists:seq(Intensity-Variance,Variance+Intensity)),
+    High_unbalanced = lists:map(fun(X) -> X/10 end, lists:seq(Size+Intensity-Variance,Size+Intensity+Variance)),
+    Low_balanced = [Intensity],
+    High_balanced = [Size+Intensity],
+
+    case Height of
+        0 -> case Original_stability of
+                0 -> Terrain_type = Low_balanced;
+                1 -> Terrain_type = Low_unbalanced
+            end;
+        1 -> case Original_stability of
+                0 -> Terrain_type = High_balanced;
+                0 -> Terrain_type = High_unbalanced
+            end
+    end,
+
+    Results = make_map(Size_factor,Intensity,Terrain_type),
+    {reply,Results,_State};
+
+handle_call(stop, _From, _State) ->
+        {stop,normal,
+                stopped,
+          down}. %% setting the server's internal state to down
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handling cast messages
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec handle_cast(Msg::term(), State::term()) -> {noreply, term()} |
+                                  {noreply, term(), integer()} |
+                                  {stop, term(), term()}.
+handle_cast(_Msg, State) ->
+    {noreply, State}.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handling all non call/cast messages
+%%
+%% @end
+-spec handle_info(Info::term(), State::term()) -> {noreply, term()} |
+                                   {noreply, term(), integer()} |
+                                   {stop, term(), term()}.
+handle_info(_Info, State) ->
+    {noreply, State}.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Convert process state when code is changed
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec code_change(term(), term(), term()) -> {ok, term()}.
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+
+
+
+make_map(Size_factor,Intensity,Terrain_type) ->
+    Size = round(math:pow(2,Size_factor)),
+    Step = Size,
+    Vary_reduce = 10 - Size_factor,
+    Variance = Size * 2 * Intensity,
+% -spec make_map(term()) -> term().
+% make_map(Size_factor) ->
+%     Size = round(math:pow(2,Size_factor)),
+%     % Variance = Size*10,
+%     Step = Size,
+%     % Step = round(Size/2),
+%     % Vary_list = lists:map(fun(X) -> X/10 end, lists:seq(0-Variance,Variance)),
+
+%     Ex_mountains = 7,
+%     Mountains = 5,
+%     Plains = 3,
+%     Ex_plains = 1,
+
+%     Intensity = lists:nth(rand:uniform(3),[Ex_mountains,Mountains,Plains,Ex_plains]),
+%     % Intensity = 1,
+%     io:format("Intensity: ~p~n",[Intensity]),
+%     Vary_reduce = 9 - Size_factor,
+%     io:format("Vary_reduce: ~p~n",[Vary_reduce]),
+%     Variance = Size * 2 * Intensity,
+%     io:format("Starting Variance: ~p~n",[Variance]),
+
+%     Low_unbalanced = lists:map(fun(X) -> X/10 end, lists:seq(Intensity-Variance,Variance+Intensity)),
+%     High_unbalanced = lists:map(fun(X) -> X/10 end, lists:seq(Size+Intensity-Variance,Size+Intensity+Variance)),
+%     Low_balanced = [Intensity],
+%     % Low_plains = lists:map(fun(X) -> X/10 end, lists:seq(0-Variance,Variance)),
+%     High_balanced = [Size+Intensity],
+%     % High_plains = lists:map(fun(X) -> X/10 end, lists:seq(0-Variance,Variance)),
+
+%     % io:format("||~p||",[Vary_list]),
+%     % Terrain_type = lists:nth(4,[Low_unbalanced,High_unbalanced,Low_balanced,High_balanced]),
+    
+%     case lists:nth(rand:uniform(4),[0,1,2,3]) of
+%         0 -> io:format("Low_unbalanced~n"),
+%             Terrain_type = Low_unbalanced;
+%         1 -> io:format("High_unbalanced~n"),
+%             Terrain_type = High_unbalanced;
+%         2 -> io:format("Low_balanced~n"),
+%             Terrain_type = Low_balanced;
+%         3 -> io:format("High_balanced~n"),
+%             Terrain_type = High_balanced
+%     end,
+    
     Terrain_map1 = gb_trees:from_orddict(orddict:from_list([{{X,Y},{0,0}} || X <- lists:seq(0,Size), Y <- lists:seq(0,Size)])),
     % io:format("terrain_map before updates: ~p~n",[Terrain_map1]),
-    Terrain_map2 = gb_trees:update({0,0},{lists:nth(rand:uniform(length(Vary_list)),Vary_list),0},Terrain_map1),
-    Terrain_map3 = gb_trees:update({0,Size},{lists:nth(rand:uniform(length(Vary_list)),Vary_list),0},Terrain_map2),
-    Terrain_map4 = gb_trees:update({Size,0},{lists:nth(rand:uniform(length(Vary_list)),Vary_list),0},Terrain_map3),
-    Terrain_map5 = gb_trees:update({Size,Size},{lists:nth(rand:uniform(length(Vary_list)),Vary_list),0},Terrain_map4),
+    Terrain_map2 = gb_trees:update({0,0},{lists:nth(rand:uniform(length(Terrain_type)),Terrain_type),0},Terrain_map1),
+    Terrain_map3 = gb_trees:update({0,Size},{lists:nth(rand:uniform(length(Terrain_type)),Terrain_type),0},Terrain_map2),
+    Terrain_map4 = gb_trees:update({Size,0},{lists:nth(rand:uniform(length(Terrain_type)),Terrain_type),0},Terrain_map3),
+    Terrain_map5 = gb_trees:update({Size,Size},{lists:nth(rand:uniform(length(Terrain_type)),Terrain_type),0},Terrain_map4),
     % io:format("terrain_map after creation: ~p~n",[Terrain_map5]),
     
     Finished_terrain_map = vary_map(Step,
                     Size,
+                    Vary_reduce,
                     Variance,
                     Terrain_map5),
     Structured_map = add_structures(Size*Size,Size,{0,0,1,1},dict:new(),Finished_terrain_map,1),
@@ -106,8 +295,8 @@ add_structures(Squares_left,Size,{X1,Y1,X2,Y2},Structures,Map,Struct) ->
     end,
     add_structures(Squares_left-1,Size,{New_X1,New_Y1,New_X2,New_Y2},New_structures,Structure_map,Next_struct).
 
--spec vary_map(term(),term(),term(),term()) -> term().
-vary_map(1,Size,Variance,Terrain_map) -> 
+-spec vary_map(term(),term(),term(),term(),term()) -> term().
+vary_map(1,Size,Vary_reduce,Variance,Terrain_map) -> 
     % io:format("Step of 1"),
     % io:format("Variance: ~p~n",[Variance]),
     % io:format("terrain_map: ~p~n",[Terrain_map]),
@@ -144,7 +333,7 @@ vary_map(1,Size,Variance,Terrain_map) ->
     % TODO send tree to file, and then access from python. I may need to move all this to the windows side.
     update_map(Diamond_corners, Terrain_map2);
 
-vary_map(Step, Size, Variance, Terrain_map) ->
+vary_map(Step,Size,Vary_reduce,Variance,Terrain_map) ->
     % io:format("Step: ~p~n",[Step]),
     % io:format("Variance: ~p~n",[Variance]),
     Vary_list = lists:map(fun(X) -> X/10 end, lists:seq(floor(0-Variance),floor(Variance))),
@@ -178,7 +367,7 @@ vary_map(Step, Size, Variance, Terrain_map) ->
     Terrain_map3 = update_map(Diamond_corners, Terrain_map2),
     % io:format("~p",[gb_trees:values(Terrain_map3)]),
     % io:format("~p",[Step]),
-    vary_map(round(Step/2),Size,Variance/6,Terrain_map3).
+    vary_map(round(Step/2),Size,Vary_reduce,Variance/Vary_reduce,Terrain_map3).
 
 
 

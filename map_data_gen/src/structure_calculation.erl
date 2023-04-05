@@ -119,15 +119,16 @@ handle_call({{{{X1,Y1},{value,Value_11}},{{X1,Y2},{value,Value_12}},{{X2,Y1},{va
 
     % Squares = [PZ_square,PN_square,ZN_square],
     Square = [make_tuple_value(Value_11),make_tuple_value(Value_12),make_tuple_value(Value_21),make_tuple_value(Value_22)],
-    case can_be_struct(Square) of
+    % case can_be_struct(Square) of
+    case can_be_struct_rev(Square,Square) of
         true -> Structure_list = calculate_structure(Square,Structures,Next_struct),
                 Struct_value = lists:nth(rand:uniform(length(Structure_list)),Structure_list);
         _Else -> Struct_value = 0
     end,
-    case Struct_value of
-        0 -> io:format("not struct: ~n~p | ~p~n~p | ~p~n",[{{X1,Y1},get_struct(Value_11)},{{X1,Y2},get_struct(Value_12)},{{X2,Y1},get_struct(Value_21)},{{X2,Y2},get_struct(Value_22)}]);
-        _ELse -> io:format("is struct:  ~n~p | ~p~n~p | ~p~n",[{{X1,Y1},Struct_value},{{X1,Y2},Struct_value},{{X2,Y1},Struct_value},{{X2,Y2},Struct_value}])
-    end,
+    % case Struct_value of
+        % 0 -> io:format("not struct: ~n~p | ~p~n~p | ~p~n",[{{X1,Y1},get_struct(Value_11)},{{X1,Y2},get_struct(Value_12)},{{X2,Y1},get_struct(Value_21)},{{X2,Y2},get_struct(Value_22)}]);
+        % _ELse -> io:format("is struct:  ~n~p | ~p~n~p | ~p~n",[{{X1,Y1},Struct_value},{{X1,Y2},Struct_value},{{X2,Y1},Struct_value},{{X2,Y2},Struct_value}])
+    % end,
     {reply,
         Struct_value,
         State};
@@ -147,9 +148,15 @@ handle_call({Square,_Size,_Structures,_Next_struct},_From,State) ->
 %% @end
 %%--------------------------------------------------------------------
 
-can_be_struct([{H1,_},{H2,_},{H3,_},{H4,_}]) when abs(abs(H1)-abs(H2)) < 1, abs(abs(H2)-abs(H3)) < 1, 
-                                                    abs(abs(H3)-abs(H4)) < 1, abs(abs(H4)-abs(H1)) < 1 -> true;
+can_be_struct([{H1,_},{H2,_},{H3,_},{H4,_}]) when abs(abs(H1)-abs(H2)) < 0.5, abs(abs(H2)-abs(H3)) < 0.5, 
+                                                    abs(abs(H3)-abs(H4)) < 0.5, abs(abs(H4)-abs(H1)) < 0.5 -> true;
 can_be_struct(_) -> false.
+
+can_be_struct_rev([{Height,_}|Rest],Vertices) when Height < 0 -> false;
+can_be_struct_rev([{Height,_}|Rest],Vertices) when 0 =< Height -> can_be_struct_rev(Rest,Vertices);
+can_be_struct_rev([],[{H1,_},{H2,_},{H3,_},{H4,_}]) when abs(abs(H1)-abs(H2)) < 1, abs(abs(H2)-abs(H3)) < 1, 
+                                                    abs(abs(H3)-abs(H4)) < 1, abs(abs(H4)-abs(H1)) < 1 -> true;
+can_be_struct_rev([],_) -> false.
 
 calculate_structure(Square,Structures,Next_struct) ->
     Structs = [Struct || {_,Struct} <- Square],

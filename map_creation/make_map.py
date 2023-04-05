@@ -26,13 +26,13 @@ def create_blender_python(size,map_data):
     py_blender = f.read()
     f.close()
     # Make name for generated map.
-    name = f"/home/orindale/Programing/terra_struct_gen/maps/map_size_{size}.blend"
+    name = f"/home/orindale/Programing/terra_struct_gen/maps/map_sz_{size}.blend"
     if not os.path.isfile(name):
         pass
     else:
         same_size = 1
         while True:
-            name = f"/home/orindale/Programing/terra_struct_gen/maps/map_{same_size}_size_{size}.blend"
+            name = f"/home/orindale/Programing/terra_struct_gen/maps/map_sz_{size}_{same_size}.blend"
             if not os.path.isfile(name):
                 break
             else:
@@ -48,7 +48,7 @@ def create_blender_python(size,map_data):
     f.close()
     # open blender file just made in blender with no GUI, then import py_blender_<size>.py into blender, and run
     os.system(f"blender /home/orindale/Programing/terra_struct_gen/map_creation/starting_map.blend --background --python /home/orindale/Programing/terra_struct_gen/map_creation/blend_files/{file_name}")
-
+    os.system(f"blender {name}")
 
 
 def main():

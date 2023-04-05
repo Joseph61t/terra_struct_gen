@@ -67,4 +67,5 @@ for _struct,vertices in to_be_extruded.items():
 bpy.ops.object.mode_set(mode="EDIT")
 
 bpy.ops.mesh.select_all(action='DESELECT')
+bpy.ops.object.mode_set(mode="OBJECT")
 bpy.ops.wm.save_as_mainfile(filepath="<name>")
